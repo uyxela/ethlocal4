@@ -1,0 +1,59 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model User {
+    id Int @id @default(autoincrement())
+
+    ethglobalId Int @unique @map("ethglobal_id")
+
+    pushToken String? @map("push_token")
+
+    Schedule     Schedule[]
+    Notification Notification[]
+}
+
+model Schedule {
+    id Int @id @default(autoincrement())
+
+    userId Int  @map("user_id")
+    user   User @relation(fields: [userId], references: [id])
+
+    ethglobalEventId Int @map("ethglobal_event_id")
+
+    ScheduleItem ScheduleItem[]
+
+    @@unique([userId, ethglobalEventId])
+}
+
+model ScheduleItem {
+    id Int @id @default(autoincrement())
+
+    ethglobalId Int @map("ethglobal_id")
+
+    scheduleId Int      @map("schedule_id")
+    schedule   Schedule @relation(fields: [scheduleId], references: [id])
+
+    name      String
+    startTime DateTime @map("start_time")
+}
+
+model Notification {
+    id Int @id @default(autoincrement())
+
+    title String
+    body  String
+
+    scheduleItemId Int? @map("schedule_item_id")
+
+    userId Int  @map("user_id")
+    user   User @relation(fields: [userId], references: [id])
+
+    sentAt DateTime  @map("sent_at")
+    readAt DateTime? @map("read_at")
+}
